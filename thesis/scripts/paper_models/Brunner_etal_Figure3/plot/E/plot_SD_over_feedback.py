@@ -8,7 +8,7 @@ from thesis.scripts.paper_models.utilities.plot_helper import my_load_df, ashman
 
 def EC50_calculation(E_max, E_min, k, N, R):
     return (E_max * k ** N + E_min * R ** N) / (k ** N + R ** N)
-save_plot = True
+save_plot = False
 hdd = "/extra2" if os.path.exists("/extra2") else "/extra"
 user = getpass.getuser()
 saving_string =r"/home/brunner/Documents/Current work/2023_11_17/"
@@ -16,7 +16,7 @@ if not os.path.exists(saving_string):
     os.mkdir(saving_string)
 
 setups = [
-    "pos",
+    # "pos",
     "neg",
 ]
 

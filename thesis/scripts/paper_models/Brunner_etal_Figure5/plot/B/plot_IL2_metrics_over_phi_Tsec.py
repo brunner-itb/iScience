@@ -7,7 +7,7 @@ from scipy.spatial import distance_matrix
 from thesis.scripts.paper_models.utilities.plotting_rc import rc_ticks
 from thesis.scripts.paper_models.utilities.plot_helper import myDBscan
 
-saving_path = f"/home/brunner/Documents/Current work/2023_11_17/"
+saving_path = f"/home/brunner/Documents/Current work/2024_09_06/"
 
 path = "/extra2/brunner/clustering_both/300_3D_fine/dataframes_Fig5C_more_reps_steady_state/"
 try:
@@ -89,7 +89,7 @@ for f, frac in enumerate(fracs):
     color = "#aa0000ff"
     sns.lineplot(data=plot_df.loc[plot_df.frac == frac], x = "scan_value", y = "surf_c", errorbar="se", color=color,
                  alpha=alphas[f], linestyle=linestyles[f], err_kws={"linewidth":0, "alpha":alphas[f]*0.3})
-plt.ylabel(r"surface conc. s.d. (pM)")
+plt.ylabel(r"surface conc. avg. (pM)")
 plt.xlabel(r"$\varphi$(T$_{\rm sec}$)")
 plt.yscale("linear")
 plt.xticks([0, 0.5, 1])
@@ -121,7 +121,7 @@ plt.tight_layout(h_pad=-0.6)
 fig.savefig(saving_path + "Tsec_activation_over_phi" + ".pdf", bbox_inches='tight', transparent=True)
 plt.show()
 #%%
-factor = 1
+factor = 0.89 #1
 rc_ticks['figure.figsize'] = [1.67475 * factor, 1.386 * factor]
 sns.set_theme(context="talk", style="ticks", rc=rc_ticks)
 fig, ax = plt.subplots()
@@ -141,7 +141,7 @@ plt.tight_layout()
 plt.show()
 
 #%%
-factor = 1
+factor = 0.89 #1
 rc_ticks['figure.figsize'] = [1.67475 * factor, 1.386 * factor]
 sns.set_theme(context="talk", style="ticks", rc=rc_ticks)
 fig, ax = plt.subplots()

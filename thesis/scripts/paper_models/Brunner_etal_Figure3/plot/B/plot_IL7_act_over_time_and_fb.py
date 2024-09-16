@@ -12,7 +12,7 @@ from thesis.main.my_debug import message
 def EC50_calculation(E_max, E_min, k, N, R):
     return (E_max * k ** N + E_min * R ** N) / (k ** N + R ** N)
 
-save_plot = True
+save_plot = False
 hdd = "extra2" if os.path.exists("/extra2") else "extra"
 user = getpass.getuser()
 

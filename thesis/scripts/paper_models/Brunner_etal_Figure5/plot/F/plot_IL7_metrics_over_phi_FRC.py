@@ -7,7 +7,7 @@ from scipy.spatial import distance_matrix
 from thesis.scripts.paper_models.utilities.plotting_rc import rc_ticks
 from thesis.scripts.paper_models.utilities.plot_helper import myDBscan
 
-saving_path = f"/home/brunner/Documents/Current work/2023_11_17/"
+saving_path = f"/home/brunner/Documents/Current work/2024_09_06/"
 
 path = "/extra2/brunner/paper_models/kinetics/il7_boundary_bridson/dataframes_Tsec_clustering_scan_steady_state/"
 try:
@@ -114,7 +114,7 @@ plt.tight_layout()
 fig.savefig(saving_path + "FRC_activation_over_phi" + ".pdf", bbox_inches='tight', transparent=True)
 plt.show()
 #%%
-factor = 1
+factor = 0.89 #1
 rc_ticks['figure.figsize'] = [1.67475 * factor, 1.386 * factor]
 sns.set_theme(context="talk", style="ticks", rc=rc_ticks)
 fig, ax = plt.subplots()
@@ -134,7 +134,7 @@ plt.tight_layout()
 plt.show()
 
 #%%
-factor = 1
+factor = 0.89 #1
 rc_ticks['figure.figsize'] = [1.67475 * factor, 1.386 * factor]
 sns.set_theme(context="talk", style="ticks", rc=rc_ticks)
 fig, ax = plt.subplots()
