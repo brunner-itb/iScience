@@ -93,7 +93,7 @@ to set up necessary environment variables.
 </h1>
 
 For clarification, a fully documented `example_parameters.py` file has be created at `model/scripts/paper_models/example_parameters.py`. 
-Refer to it if questions regarding the parameters and how to change them arises. \
+Refer to it if questions regarding the parameters and how to change them arise. \
 If a parameter is not chosen its value will revert to its standard value chosen in the 
 parameter template. These templates can be found at `model/scenarios/box_grid.py`, together with their unit conversion.
 
@@ -101,8 +101,9 @@ To replicate Figure 1 of the correspoding publication, follow these steps:
 1. Navigate to `model/scripts/paper_models/Brunner_etal_Figure1/run`.
 2. Depending on which panel you want to recreate, choose a folder, e.g. `B-E`.  Here you will find all necessary files to reproduce the data needed for the plotting.
 3. Open the parameters.py file and edit the path variable at the top to point to the desired top level directoy for your simulation results.
-4. Execute `python run_all.py && python list_post_process.py && python create_df.py && python combine_dfs.py`. Note: This is a parameter scan which will use multiple threads. The thread usage can be adjusted in the `run_all.py` script, line 33.
-5. These scripts will first run the scan, perform the post_processing, create the data frames for each sub-run and then combine them into one `cell_df.hf` and `global_df.h5` each.
+4. Execute `python run_all.py && python list_post_process.py && python create_df.py`. Note: This is a parameter scan which will do multiple scans in parallel. How many are done simultaneously can be adjusted in the `run_all.py` script, line 33.
+5. These scripts will first run the scan, perform the post_processing and create the data frames for each sub-run.
+6. To combine the dataframes from the sub-runs, first edit the path variable in the `combine_dfs.py` file to point to your results, then execute it. This will then combine them into one `cell_df.hf` and `global_df.h5` each.
 6. After this has finished, navigate to `model/scripts/paper_models/Brunner_etal_Figure1/plot/B`, adjust the paths according to the path you chose in the `parameters.py` file and execute both files here to create the plots of panel B.
 
 The first time any model is run it will need to
