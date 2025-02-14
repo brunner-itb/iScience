@@ -12,7 +12,7 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/lukaskiwitz/thesis",
-    packages=["thesis/main", "thesis/scenarios", "thesis/example_scripts"],
+    packages=["model/main", "model/scenarios", "model/example_scripts"],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",

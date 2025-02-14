@@ -1,0 +1,239 @@
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import seaborn as sns
+import os
+from thesis.scripts.paper_models.utilities.plot_helper import activation_to_global_df
+from thesis.scripts.paper_models.utilities.plotting_rc import rc_ticks
+
+def EC50_calculation(E_max, E_min, k, N, R):
+    return (E_max * k ** N + E_min * R ** N) / (k ** N + R ** N)
+
+hdd = "/extra2" if os.path.exists("/extra2") else "/extra"
+# path = hdd + "/brunner/paper_models/prelim_boxed_static/parameter_scan_sigma/"
+# path = "/extra2/kiwitz/20220727_paper_models/boxed_static_240_box/20220905_test_5/"
+# path = "/extra2/brunner/paper_models/boxed_static/parameter_scan_const_surf_c/"
+path = "/extra2/brunner/paper_models/boxed_static/parameter_scan_test/"
+
+fig_path = "/home/brunner/Documents/Current work/2023_11_03/"  + "FigS2E_"
+
+global_df = pd.read_hdf(path + 'global_df.h5', mode="r")
+cell_df = pd.read_hdf(path + 'cell_df.h5', mode="r")
+
+global_df = global_df.loc[(global_df["model_name"] == "pde_model")]
+# global_df["Gradient"] *= 1e3
+cell_df = cell_df.loc[(cell_df["model_name"] == "pde_model")]
+cell_df["IL-2_surf_c"] *= 1e3
+#%%
+print("plotting")
+linear_uptake = False
+# uptake = "patrick_saturation"
+
+scan_names = ["R", "sigma", "q", "T_sec", "KD", "D", "distance", "kd"]
+parameter_names = ["scan_index", "IL-2_sigma", "IL-2_q", "IL-2_Tsec_fraction", "IL-2_KD", "IL-2_D", "scan_value", "scan_index"]
+# labels = [r"R: receptors", r"$\sigma$: receptor heterog.", r" q: secretion rate", r"f$_{\rm sec}$: secreting cells",
+#           r"K$_{\rm D}$: saturation const.", "D: diffusion", r"d$_{\rm c}$: cell-cell-distance", r"$\eta$: cytokine decay"]
+labels = [r"R", r"$\sigma$", r" q", r"f$_{\rm sec}$", r"K$_{\rm D}$", "D", r"d$_{\rm c}$", r"$\eta$"]
+
+
+no_of_scan_points = 9
+scan_values = np.logspace(-1,1,no_of_scan_points)
+plotted_sv = scan_values[::2]
+
+# ylim = (-2, 2.1)
+# ylim = (6e-2, 6e1)
+ylim = (5e-2, 6e1)
+
+# scan_measure = "IL-2_surf_c"
+# scan_measure = "CV"
+scan_measure = "SD"
+# scan_measure = "Gradient"
+# y_axis_label = "surf. c."
+# scan_measure = "pSTAT5"
+# y_axis_label = "%pSTAT5"
+
+
+#%%
+if scan_measure == "Gradient":
+    for s, sn in enumerate(scan_names):
+        if sn == "kd":
+            kd_values = scan_values
+            for i, si in enumerate(global_df.loc[(global_df["scan_name_scan_name"] == sn), "scan_index"].unique()):
+                global_df.loc[(global_df["scan_name_scan_name"] == sn) & (global_df["scan_index"] == si), "scan_value"] = kd_values[i]
+        if sn == "D":
+            D_values = scan_values
+            for i, si in enumerate(global_df.loc[(global_df["scan_name_scan_name"] == sn), "scan_index"].unique()):
+                global_df.loc[(global_df["scan_name_scan_name"] == sn) & (global_df["scan_index"] == si), "scan_value"] = D_values[i]
+        elif sn in ["R", "sigma", "KD", "q"]: #only on Ths
+            scan_indices = np.sort(global_df.loc[(global_df["scan_name_scan_name"] == sn), "scan_index"].unique())
+            for si, scan_index in enumerate(scan_indices):
+                global_df.loc[(global_df["scan_name_scan_name"] == sn) & (global_df.scan_index == scan_index), "scan_value"] = scan_values[si]
+        else:
+            for pn, para_names in enumerate(global_df.loc[(global_df["scan_name_scan_name"] == sn), parameter_names[s]].unique()):
+                global_df.loc[(global_df["scan_name_scan_name"] == sn) & (np.abs(global_df[parameter_names[s]] - para_names) < 1e-10), "scan_value"] = scan_values[pn]
+else:
+    for s, sn in enumerate(scan_names):
+        if sn == "kd":
+            kd_values = scan_values
+            for i, si in enumerate(cell_df.loc[(cell_df["scan_name_scan_name"] == sn), "scan_index"].unique()):
+                cell_df.loc[(cell_df["scan_name_scan_name"] == sn) & (cell_df["scan_index"] == si), "scan_value"] = \
+                kd_values[i]
+        if sn == "D":
+            D_values = scan_values
+            for i, si in enumerate(cell_df.loc[(cell_df["scan_name_scan_name"] == sn), "scan_index"].unique()):
+                cell_df.loc[(cell_df["scan_name_scan_name"] == sn) & (cell_df["scan_index"] == si), "scan_value"] = \
+                D_values[i]
+        elif sn in ["sigma", "KD"]:  # only on Ths
+            for pn, para_names in enumerate(
+                    cell_df.loc[(cell_df["scan_name_scan_name"] == sn) & (cell_df.type_name == "Th"), parameter_names[
+                        s]].unique()):
+                scan_index = cell_df.loc[(cell_df["scan_name_scan_name"] == sn) & (
+                        np.abs(cell_df[parameter_names[s]] - para_names) < 1e-10), "scan_index"].unique()[0]
+                cell_df.loc[(cell_df["scan_name_scan_name"] == sn) & (cell_df.scan_index == scan_index), "scan_value"] = \
+                scan_values[pn]
+        elif sn in ["R"]:  # only on Ths
+            for pn, para_names in enumerate(
+                    cell_df.loc[(cell_df["scan_name_scan_name"] == sn) & (cell_df.type_name == "Th"), parameter_names[
+                        s]].unique()):
+                scan_index = cell_df.loc[(cell_df["scan_name_scan_name"] == sn) & (
+                        np.abs(cell_df[parameter_names[s]] - para_names) < 1e-10), "scan_index"].unique()[0]
+                cell_df.loc[(cell_df["scan_name_scan_name"] == sn) & (cell_df.scan_index == scan_index), "scan_value"] = \
+                scan_values[pn]
+        elif sn in ["q"]:  # only on Tsecs
+            # assert False
+            for pn, para_names in enumerate(
+                    cell_df.loc[(cell_df["scan_name_scan_name"] == sn) & (cell_df.type_name == "Tsec"), parameter_names[
+                        s]].unique()):
+                scan_index = cell_df.loc[(cell_df["scan_name_scan_name"] == sn) & (
+                        np.abs(cell_df[parameter_names[s]] - para_names) < 1e-10), "scan_index"].unique()[0]
+                cell_df.loc[(cell_df["scan_name_scan_name"] == sn) & (cell_df.scan_index == scan_index), "scan_value"] = \
+                scan_values[pn]
+        else:
+            for pn, para_names in enumerate(
+                    cell_df.loc[(cell_df["scan_name_scan_name"] == sn), parameter_names[s]].unique()):
+                cell_df.loc[(cell_df["scan_name_scan_name"] == sn) & (
+                            np.abs(cell_df[parameter_names[s]] - para_names) < 1e-10), "scan_value"] = scan_values[pn]
+
+#%%
+results = []
+error = []
+for n,name in enumerate(scan_names):
+    name_df = global_df.loc[(global_df["scan_name_scan_name"] == name)] if scan_measure == "Gradient" else cell_df.loc[(cell_df["scan_name_scan_name"] == name)]
+    for value in plotted_sv:
+        rep_standards = []
+        rep_as = []
+        for rep in name_df["replicat_index"].unique():
+            if scan_measure == "pSTAT5":
+                try:
+                    standard = len(name_df.loc[(name_df["replicat_index"] == rep) & (name_df["scan_value"] == 1) & (
+                                name_df["pSTAT5"] > 0.5)]) / \
+                               len(name_df.loc[(name_df["replicat_index"] == rep) & (name_df["scan_value"] == 1)])
+                    a_mean = len(name_df.loc[(name_df["replicat_index"] == rep) & (name_df["scan_value"] == value) & (
+                            name_df["pSTAT5"] > 0.5)]) / \
+                             len(name_df.loc[(name_df["replicat_index"] == rep) & (name_df["scan_value"] == value)])
+
+                    rep_standards.append(standard)
+                    rep_as.append(a_mean)
+                except ZeroDivisionError:
+                    pass
+            elif scan_measure == "SD":
+                standard = name_df.loc[(name_df["replicat_index"] == rep) & (name_df["scan_value"] == 1), "IL-2_surf_c"].std()
+                rep_standards.append(standard)
+                a_mean = name_df.loc[(name_df["replicat_index"] == rep) & (name_df["scan_value"] == value), "IL-2_surf_c"].std()
+                rep_as.append(a_mean)
+            elif scan_measure == "CV":
+                standard = name_df.loc[(name_df["replicat_index"] == rep) & (np.abs(name_df["scan_value"] - 1) < 1e-12), "IL-2_surf_c"].std() / \
+                           name_df.loc[(name_df["replicat_index"] == rep) & (np.abs(name_df["scan_value"] - 1) < 1e-12), "IL-2_surf_c"].mean()
+                rep_standards.append(standard)
+                a_mean = name_df.loc[(name_df["replicat_index"] == rep) & (np.abs(name_df["scan_value"] - value) < 1e-12), "IL-2_surf_c"].std() / \
+                         name_df.loc[(name_df["replicat_index"] == rep) & (np.abs(name_df["scan_value"] - value) < 1e-12), "IL-2_surf_c"].mean()
+                rep_as.append(a_mean)
+            elif scan_measure == "Gradient":
+                name_df = global_df.loc[(global_df["scan_name_scan_name"] == name)]
+                name_df["Gradient"] *= 1e3
+                standard = name_df.loc[(name_df["replicat_index"] == rep) & (name_df["scan_value"] == 1), scan_measure].mean()
+                standard_conc = name_df.loc[(name_df["replicat_index"] == rep) & (name_df["scan_value"] == 1), "surf_c"].mean()
+                rep_standards.append(standard/standard_conc)
+                a_mean = name_df.loc[(name_df["replicat_index"] == rep) & (name_df["scan_value"] == value), scan_measure].mean()
+                a_conc = name_df.loc[(name_df["replicat_index"] == rep) & (name_df["scan_value"] == value), "surf_c"].mean()
+                rep_as.append(a_mean)
+            else:
+                standard = name_df.loc[
+                    (name_df["replicat_index"] == rep) & (name_df["scan_value"] == 1), scan_measure].mean()
+                rep_standards.append(standard)
+                a_mean = name_df.loc[
+                    (name_df["replicat_index"] == rep) & (name_df["scan_value"] == value), scan_measure].mean()
+                rep_as.append(a_mean)
+        results.append(np.nanmean(np.array(rep_as)))# / np.array(rep_standards)))
+        error.append(np.nanstd(np.array(rep_as)))# / np.array(rep_standards)))
+
+
+#%%
+
+N = len(plotted_sv)
+
+x = np.array([[N*(x + 0) + b for b in np.arange(N)] for x in range(len(scan_names))]).flatten()
+np.array([[N*x + b for b in np.arange(N)] for x in range(len(scan_names))]).flatten()
+x_list = []
+x_ticks = []
+for x in range(len(scan_names)):
+    x_list.append(np.arange(x*1.25*N, x*1.25*N+N))
+    x_ticks.append(np.mean(x_list[-1]))
+    # hier ordentliches x, sodass die bars weiter auseinander sind. Nun in der for-Schleife weil kp wie mein algo geht
+
+bars = np.array(results).reshape(-1,N)
+x_reshaped = np.array(x_list)
+error_reshaped = np.array(error).reshape(-1,N)
+
+#%%
+rc_ticks['figure.figsize'] = (1.67475 * 1.32, 1.2 * 1.1) #(1.7, 1.2)
+sns.set_theme(context = "talk", style = "ticks", rc = rc_ticks)
+fig, ax = plt.subplots()
+# ax.bar(x=x[::2] , height= bars[::2]-1, edgecolor = "grey", color="grey", yerr=error[::2], width=1, bottom=1, linewidth=0)
+# ax.bar(x=x[1::2] , height= bars[1::2]-1, edgecolor = "black", color="black", yerr=error[1::2], width=1, bottom=1, linewidth=0)
+width = 0.75
+alphas = np.logspace(-0.8,0, N)
+if scan_measure == "surf. c.":
+    for e,entry in enumerate(bars):
+        for v, value in enumerate(entry):
+            ax.bar(x=x_reshaped[e,v], height=value, color="black", alpha=alphas[v], yerr=error_reshaped[e,v], width=width, bottom=1,
+                   linewidth=0)
+    # ax.bar(x=x[::3] , height= bars[::3]-1, color="black", alpha=0.3, yerr=error[::3], width=width, bottom=1, linewidth=0)
+    # ax.bar(x=x[1::3] , height= bars[1::3]-1, color="black", alpha=0.7, yerr=error[1::3], width=width, bottom=1, linewidth=0)
+    # ax.bar(x=x[2::3] , height= bars[2::3]-1, color="black", alpha=1, yerr=error[2::3], width=width, bottom=1, linewidth=0)
+else:
+    for e,entry in enumerate(bars):
+        for v, value in enumerate(entry):
+            ax.bar(x=x_reshaped[e,v], height=value, color="black", alpha=alphas[v], yerr=error_reshaped[e,v], width=width, bottom=0,
+                   linewidth=0, error_kw=dict(lw=width/2, capsize=0, capthick=0))
+    # ax.bar(x=x[::3] , height= bars[::3], color="lightgrey", yerr=error[::3], width=width, bottom=0, linewidth=0)
+    # ax.bar(x=x[1::3] , height= bars[1::3], color="darkgrey", yerr=error[1::3], width=width, bottom=0, linewidth=0)
+    # ax.bar(x=x[2::3] , height= bars[2::3], color="black", yerr=error[2::3], width=width, bottom=0, linewidth=0)
+ax.set_xticks(x_ticks)
+ax.set_xticklabels(labels)
+
+# plt.xticks(rotation=-90, ha='center')
+
+if scan_measure == "Gradient":
+    ax.set_ylabel(r"gradient (pM/µm)")
+    ax.set_yscale("log", base=10)
+else:
+    ax.set_ylabel(r"surface conc. s.d. (pM)")
+    ax.set_yscale("log", base=10)
+
+if scan_measure == "IL-2_surf_c":
+    ax.set_ylim((1e-1, 5e4))
+    ax.set_yscale("log", base=10)
+    import matplotlib as matplotlib
+    locmin = matplotlib.ticker.LogLocator(base=10.0,subs=(0.2,0.4,0.6,0.8),numticks=6)
+    locmaj = matplotlib.ticker.LogLocator(base=10.0,numticks=12)
+    ax.yaxis.set_minor_locator(locmin)
+    ax.yaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
+    ax.yaxis.set_major_locator(locmaj)
+    ax.yaxis.set_major_formatter(matplotlib.ticker.NullFormatter())
+
+    plt.yticks([1e-1, 1e0, 1e1, 1e2, 1e3, 1e4], [r"10$^{-1}$", "10$^0$", r"10$^1$", r"10$^2$", r"10$^3$", r"10$^4$"])
+
+fig.savefig(fig_path + scan_measure + ".pdf", bbox_inches='tight', transparent=True)
+plt.tight_layout()
+plt.show()

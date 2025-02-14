@@ -12,8 +12,8 @@
 #
 import os
 import sys
-sys.path.insert(0, os.path.abspath('../thesis/main'))
-sys.path.insert(0, os.path.abspath('../thesis/scenarios'))
+sys.path.insert(0, os.path.abspath('../model/main'))
+sys.path.insert(0, os.path.abspath('../model/scenarios'))
 
 
 # -- Project information -----------------------------------------------------

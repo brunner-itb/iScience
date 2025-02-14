@@ -44,6 +44,6 @@ jobs:
       run: pip install -e .
 
     - name: Run test-scenario tests
-      run: python -m unittest thesis/unit_tests/scenario_1_tests/*
+      run: python -m unittest model/unit_tests/scenario_1_tests/*
     - name: Run box grid tests
-      run: python -m unittest thesis/unit_tests/box_grid_tests/*
+      run: python -m unittest model/unit_tests/box_grid_tests/*
