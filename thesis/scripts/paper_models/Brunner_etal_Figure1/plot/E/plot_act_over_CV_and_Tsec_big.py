@@ -11,7 +11,7 @@ from thesis.scripts.paper_models.utilities.plot_helper import my_load_df, my_int
 hdd = "extra2" if os.path.exists("/extra2") else "extra"
 user = getpass.getuser()
 
-saving_string = r"/home/brunner/Documents/Current work/2024_03_15/"
+saving_string = r"/home/brunner/Documents/Current work/2024_10_25/"
 if not os.path.exists(saving_string):
     os.mkdir(saving_string)
 
@@ -72,7 +72,8 @@ for c, c_df in enumerate([spatial_cell_df]):
                                  "std": std,
                                  "surface_c": surf_c})
 #%%
-rc_ticks['figure.figsize'] = (1.386 * 1.26, 1.386 * 1.27)
+# rc_ticks['figure.figsize'] = (1.386 * 1.26, 1.386 * 1.27)
+rc_ticks['figure.figsize'] = (1.67475 * 1.02, 1.386 * 1.07)
 sns.set_theme(context="talk", style="ticks", rc=rc_ticks)
 fig, ax = plt.subplots()
 
@@ -104,7 +105,7 @@ plt.ylabel(r"pSTAT$^+$ T$_{\rm resp}$ cells (%)")
 plt.xticks([0,5,10,15])
 plt.yticks([0,50,100])
 
-fig.savefig(saving_string + f"Fig1_activation_over_CV_local_q_full.pdf", bbox_inches='tight', transparent=True)
+fig.savefig(saving_string + f"Fig1_activation_over_std_local_q_full.pdf", bbox_inches='tight', transparent=True)
 fig.tight_layout()
 plt.show()
 # #%%
